@@ -1,13 +1,15 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
-CPPFLAGS ?= -D_GNU_SOURCE
+CPPFLAGS ?= -D_GNU_SOURCE -Iinclude
+
+MERGE_SOURCES := src/main.c src/io.c src/format.c src/binder.c src/runner.c
 
 .PHONY: all clean test
 
 all: merge bin1 bin2
 
-merge: src/merge.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
+merge: $(MERGE_SOURCES) include/merge.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(MERGE_SOURCES) -o $@
 
 bin1: tests/bin1.c
 	$(CC) $(CFLAGS) $< -o $@
