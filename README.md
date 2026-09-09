@@ -70,6 +70,22 @@ make test
 
 Remove generated files with `make clean`.
 
+## Source-code architecture
+
+The implementation is separated by responsibility so each part can be studied
+and presented independently:
+
+- `src/main.c` detects binder or runner mode and validates the command line.
+- `src/format.c` validates ELF64 headers and parses bundle footer metadata.
+- `src/binder.c` constructs the output file and records payload locations.
+- `src/runner.c` extracts and executes both embedded programs sequentially.
+- `src/io.c` provides reliable streaming read/write helpers.
+- `include/merge.h` defines the shared footer structure and module interfaces.
+
+`main.c` is the control-flow entry point. It delegates to either `binder.c` or
+`runner.c`; both use `format.c` and `io.c` for their lower-level work. This keeps
+ELF analysis separate from file construction and process execution.
+
 ## How the binder works
 
 The same native executable has two modes:
@@ -195,7 +211,12 @@ address prevention, detection, and response as separate layers.
 
 ## Repository contents
 
-- `src/merge.c` — binder and generated-bundle runner
+- `src/main.c` — CLI and mode selection
+- `src/format.c` — ELF validation and footer parsing
+- `src/binder.c` — output bundle construction
+- `src/runner.c` — embedded-program execution
+- `src/io.c` — shared reliable I/O helpers
+- `include/merge.h` — shared data structure and module declarations
 - `tests/bin1.c`, `tests/bin2.c` — simple demonstration programs
 - `tests/test_merge.sh` — usage, successful binding/execution, and invalid-input
   checks
